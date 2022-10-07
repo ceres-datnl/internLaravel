@@ -107,9 +107,10 @@
                 <ul class="c-sidebar-nav-dropdown-items">
                     <li class="c-sidebar-nav-item">
                         <x-utils.link
-                            :href="route('admin.categories')"
+                            :href="route('admin.categories.index')"
                             class="c-sidebar-nav-link"
-                            :text="__('List Category')" />
+                            :text="__('List Category')"
+                            :active="activeClass(Route::is('admin.categories.*'), 'c-active')" />
                     </li>
                 </ul>
             </li>
