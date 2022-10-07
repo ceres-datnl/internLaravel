@@ -8,7 +8,7 @@
     <meta name="description" content="@yield('meta_description', appName())">
     <meta name="author" content="@yield('meta_author', 'Anthony Rappa')">
     @yield('meta')
-
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" rel="stylesheet">
     @stack('before-styles')
     <link href="{{ mix('css/backend.css') }}" rel="stylesheet">
     <livewire:styles />

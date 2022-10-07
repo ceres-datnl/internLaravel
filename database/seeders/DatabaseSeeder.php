@@ -29,5 +29,7 @@ class DatabaseSeeder extends Seeder
         $this->call(AnnouncementSeeder::class);
 
         Model::reguard();
+        $this->call(CategoriesSeeder::class);
+        $this->call(NewsSeeder::class);
     }
 }
