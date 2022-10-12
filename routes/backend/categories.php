@@ -14,6 +14,10 @@ Route::group(['prefix' => 'categories', 'as' => 'categories.'], function () {
         ->breadcrumbs(function (Trail $trail) {
             $trail->push(__('Add Category'), route('admin.categories.add'));
         });
+    Route::get('delete', [CategoryController::class, 'delete'])
+        ->name('delete');
+    Route::get('ajax', [CategoryController::class, 'ajax'])
+        ->name('ajax');
     Route::get('view', [CategoryController::class, 'view'])
         ->name('view')->breadcrumbs(function (Trail $trail) {
             $trail->push(__('View'), route('admin.categories.view'));

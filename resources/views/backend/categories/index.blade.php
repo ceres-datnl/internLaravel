@@ -1,7 +1,9 @@
 @extends('backend.layouts.app')
 
 @section('title', __('Category'))
-
+@section('css')
+    <link rel="stylesheet" href="//cdn.datatables.net/1.12.1/css/jquery.dataTables.min.css">
+@endsection
 @section('content')
     @if(session()->has('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -26,7 +28,7 @@
             </x-slot>
         @endif
         <x-slot name="body">
-            <table class="table">
+            <table id="data-table-categories" class="table">
                 <thead>
                 <tr>
                     <th>ID</th>
@@ -37,35 +39,62 @@
                 </tr>
                 </thead>
                 <tbody>
-                @foreach($listCategory as $item)
-                    <tr>
-                        <td>{{$item->id}}</td>
-                        <td>{{$item->name}}</td>
-                        <td>{{App\Services\CategoryService::getStatusLabel($item->status)}}</td>
-                        <td>{{date_format($item->created_at,'H:i:s d-m-Y')}}</td>
-                        <td>
-                            <x-utils.link
-                                icon="fa-solid fa-eye"
-                                class="btn btn-info"
-                                role="button"
-                                :href="route('admin.categories.view',['id' => $item->id ])"
-                                :text="__('View')"
-                            />
-                            <x-utils.link
-                                icon="fa-solid fa-pen"
-                                class="btn btn-primary"
-                                role="button"
-                                :href="route('admin.categories.edit',['id' => $item->id ])"
-                                :text="__('Edit')"
-                            />
-                            <a class="btn btn-danger" href="#" role="button"><i class="fa-solid fa-trash"></i>
-                                &nbsp;Delete</a>
-                        </td>
-                    </tr>
-                @endforeach
                 </tbody>
             </table>
-            {{ $listCategory->links() }}
         </x-slot>
     </x-backend.card>
+@endsection
+@section('js')
+    <script src="//cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+    <script>
+        $(document).ready( function () {
+            $('#data-table-categories').DataTable({
+                processing : true,
+                serverSide : true,
+                ajax: "{{route('admin.categories.ajax')}}",
+                columns : [
+                    {data : 'id'},
+                    {data : 'name'},
+                    {data : 'status'},
+                    {data : 'created_at'},
+                    {data : 'actions'},
+                ]
+            });
+        });
+        $(document).on("click", '.buttonDelete', function (e){
+            let id = $(this).data('id');
+            let row = $(this).parent().parent();
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "This item will be moved to the trash",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: "{{route('admin.categories.delete')}}",
+                        type: "get",
+                        data: {
+                            id: id
+                        },
+                        success: function (result) {
+                            row.html("");
+                            result = JSON.parse(result);
+                            console.log(result);
+                            if(result.status === "OK"){
+                                Swal.fire(
+                                    'Deleted!',
+                                    'Your file has been deleted.',
+                                    'success'
+                                );
+                            }
+                        }
+                    });
+                }
+            });
+        });
+    </script>
 @endsection

@@ -22,6 +22,10 @@ class CategoryController extends Controller
         return view('backend.categories.index')->with('listCategory', $listCategory);
     }
 
+    public function ajax(Request $request){
+        $this->categoryService->ajax($request);
+    }
+
     public function add()
     {
         return view('backend.categories.add');
@@ -77,5 +81,21 @@ class CategoryController extends Controller
         } catch (\Exception $exception) {
             return redirect('errors/404');
         }
+    }
+    public function delete(Request $request){
+        $result = [
+            "status" => "OK",
+            "errors" => ""
+        ];
+        try {
+             $this->categoryService->delete($request);
+        } catch (\Exception $exception) {
+            $result = [
+                "status" => "NO",
+                "errors" => "Fail"
+            ];
+        }
+        echo json_encode($result);
+        exit;
     }
 }
