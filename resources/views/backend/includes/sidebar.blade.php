@@ -115,6 +115,24 @@
                 </ul>
             </li>
         @endif
+        @if ($logged_in_user->hasAllAccess())
+            <li class="c-sidebar-nav-dropdown">
+                <x-utils.link
+                    href="#"
+                    icon="c-sidebar-nav-icon fa-solid fa-newspaper"
+                    class="c-sidebar-nav-dropdown-toggle"
+                    :text="__('News')" />
+
+                <ul class="c-sidebar-nav-dropdown-items">
+                    <li class="c-sidebar-nav-item">
+                        <x-utils.link
+                            :href="route('admin.news.index')"
+                            class="c-sidebar-nav-link"
+                            :text="__('List News')" />
+                    </li>
+                </ul>
+            </li>
+        @endif
     </ul>
 
     <button class="c-sidebar-minimizer c-class-toggler" type="button" data-target="_parent" data-class="c-sidebar-minimized"></button>

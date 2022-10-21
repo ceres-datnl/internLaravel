@@ -6,7 +6,11 @@ RUN docker-php-ext-install zip
 
 RUN docker-php-ext-install pdo_mysql mysqli
 RUN docker-php-ext-install pcntl
-
+#Installing imagemagick
+RUN apt-get update && apt-get install -y \
+    imagemagick libmagickwand-dev --no-install-recommends \
+    && pecl install imagick \
+    && docker-php-ext-enable imagick
 # Install composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 RUN pecl install redis && docker-php-ext-enable redis

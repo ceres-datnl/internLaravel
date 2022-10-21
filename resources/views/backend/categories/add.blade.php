@@ -2,7 +2,11 @@
 
 @section('title', __('Category'))
 @section('content')
-    <x-forms.post :action="route('admin.categories.store')">
+    <div class="alert alert-danger alert-dismissible fade show notification">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        <div class="message"></div>
+    </div>
+    <x-forms.post :action="route('admin.categories.store')" id="formAddCategory">
         <x-backend.card>
             <x-slot name="header">
                 @lang('Add Category')
@@ -32,3 +36,37 @@
         </x-backend.card>
     </x-forms.post>
 @endsection
+@push('after-scripts')
+    <script>
+        $(".notification").hide();
+
+        $(document).on("submit", "#formAddCategory", function (e) {
+            e.preventDefault();
+            $.ajax({
+                type: "POST",
+                url: $("#formAddCategory").attr('action'),
+                data: $("#formAddCategory").serialize(),
+                success: function (result) {
+                    if (result.errors !== undefined) {
+                        console.log(result.errors);
+                        let message = "";
+                        $("#formAddCategory button[type='submit']").prop('disabled', false);
+                        $(".notification").show();
+                        for (const [key, value] of Object.entries(result.errors)) {
+                            value.forEach(function (item){
+                                message += item+"<br>";
+                            });
+                        }
+                        $(".notification .message").html(message);
+                    } else {
+                        $('#formAddCategory')[0].submit();
+                    }
+                },
+                error: function (result) {
+                    console.log(result);
+                }
+            });
+        });
+    </script>
+@endpush
+

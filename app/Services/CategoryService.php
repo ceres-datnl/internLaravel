@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use Yajra\Datatables\Datatables;
 use Illuminate\Http\Request;
 use App\Models\Category;
 
@@ -22,43 +21,54 @@ class CategoryService
 
     public function ajax(Request $request)
     {
-        $draw   = $request->draw;
-        $start  = !empty($request->start) ? $request->start : 0;
-        $length = !empty($request->length) ? $request->length : 10;
+        $records = $this->category;
+        $draw    = $request->draw;
+        $start   = !empty($request->start) ? $request->start : 0;
+        $length  = !empty($request->length) ? $request->length : 10;
 
         $columnIndexArray = $request->order;
         $orderArray       = $request->order;
         $columnNameArray  = $request->get("columns");
         $searchArray      = $request->search;
-        $columnIndex      = $columnIndexArray[0]["column"];
-        $columnName       = $columnNameArray[$columnIndex]['data'];
-        $columnSortOrder  = $orderArray[0]['dir'];
         $searchValue      = $searchArray['value'];
 
 
 //        Total record
         $totalRecords = $this->category->select("count(*)")->count();
 //        Total record with filter
-        $totalRecordsFilter = $this->category->select("count(*)")->where("name", "like", "%" . $searchValue . "%")->count();
+        $records = $records->select("id", "name", "status", "created_at");
+        if (isset($request->id) && !is_null($request->id)) {
+            $records = $records->where("id", (int)$request->id);
+        }
+        if (isset($request->name) && !is_null($request->name)) {
+            $records = $records->where("name", "like", "%" . $request->name . "%");
+        }
+        if (isset($request->status) && !is_null($request->status)) {
+            $records = $records->where("status", $request->status);
+        } else {
+            $records = $records->whereIn("status", [0, 1]);
+        }
+        if (isset($request->created_at) && !is_null($request->created_at)) {
+//            dd($request->created_at." 00:00:01");
+            $records = $records->where("created_at", "like", $request->created_at . "%");
+        }
+        $totalRecordsFilter = $records->count();
+        $records            = $records->skip($start)
+            ->take($length);
 
-        $records      = $this->category
-            ->orderBy($columnName, $columnSortOrder)
-            ->whereIn("status",[0,1])
-            ->where("name", "like", "%" . $searchValue . "%")
-            ->skip($start)
-            ->take($length)
-            ->get();
+        $dataCategory = $records->get();
         $listCategory = [];
-        foreach ($records as $record) {
-            $actions = "";
+        foreach ($dataCategory as $item) {
+            $actions    = "";
+            $id         = $item->id;
+            $name       = $item->name;
+            $status     = self::getStatusLabel($item->status);
+            $created_at = date_create($item->created_at);
+            $created_at = date_format($created_at, 'H:i:s d-m-Y');
 
-            $id             = $record->id;
-            $name           = $record->name;
-            $status         = self::getStatusLabel($record->status);
-            $created_at     = date("H:i:s d/m/Y", strtotime($record->created_at));
-            $actions        .= "<a class='btn btn-info mr-2' href=" . route('admin.categories.view', ['id' => $id]) . "' role='button'><i class='fa-solid fa-eye'></i> &nbsp;View</a>";
-            $actions        .= "<a class='btn btn-primary mr-2' href=" . route('admin.categories.edit', ['id' => $id]) . "' role='button'><i class='fa-solid fa-pen'></i> &nbsp;Edit</a>";
-            $actions        .= "<a class='btn btn-danger text-white buttonDelete' data-id='" . $id . "' role='button'><i class='fa-solid fa-trash'></i> &nbsp;Delete</a>";
+            $actions        .= "<a class='btn btn-info mr-2' href=" . route('admin.categories.view', ['id' => $id]) . "' role='button'><i class='fa-solid fa-eye'></i></a>";
+            $actions        .= "<a class='btn btn-primary mr-2' href=" . route('admin.categories.edit', ['id' => $id]) . "' role='button'><i class='fa-solid fa-pen'></i></a>";
+            $actions        .= "<a class='btn btn-danger text-white buttonDelete' data-id='" . $id . "' role='button'><i class='fa-solid fa-trash'></i></a>";
             $listCategory[] = [
                 'id'         => $id,
                 'name'       => $name,
@@ -67,12 +77,14 @@ class CategoryService
                 'actions'    => $actions
             ];
         }
+//        dd($listCategory);
         $response = [
-            "draw"            => intval($draw),
+            "draw"            => $draw,
             "recordsTotal"    => $totalRecords,
             "recordsFiltered" => $totalRecordsFilter,
             "data"            => $listCategory
         ];
+//        dd($response);
         echo json_encode($response);
         exit;
     }

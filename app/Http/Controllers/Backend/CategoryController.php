@@ -5,25 +5,26 @@ namespace App\Http\Controllers\Backend;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\CategoryService;
+use App\Http\Requests\Backend\Category\AddCategoryRequest;
+use App\Http\Requests\Backend\Category\UpdateCategoryRequest;
 
 class CategoryController extends Controller
 {
-    protected $categoryService;
+    protected $category;
 
-    public function __construct(CategoryService $categoryService)
+    public function __construct(CategoryService $category)
     {
-        $this->categoryService = $categoryService;
+        $this->category = $category;
     }
 
     public function index()
     {
-        $listCategory = $this->categoryService->getData();
-
-        return view('backend.categories.index')->with('listCategory', $listCategory);
+        return view('backend.categories.index');
     }
 
     public function ajax(Request $request){
-        $this->categoryService->ajax($request);
+//        dd($request->all());
+        $this->category->ajax($request);
     }
 
     public function add()
@@ -31,25 +32,21 @@ class CategoryController extends Controller
         return view('backend.categories.add');
     }
 
-    public function store(Request $request)
+    public function store(AddCategoryRequest $request)
     {
-        $validated = $request->validate([
-            'name'   => 'required|max:255',
-            'status' => 'required|numeric|min:0|max:2',
-        ]);
         try {
-            $this->categoryService->insert($request);
+            $this->category->insert($request);
         } catch (\Exception $exception) {
             return redirect('errors/404');
         }
 
-        return redirect()->route('admin.categories.index')->with(['success' => 'Add Product Successful']);
+        return redirect()->route('admin.categories.index')->with(['success' => 'Add Category Successful']);
     }
 
     public function edit(Request $request)
     {
         try {
-            $dataCategory = $this->categoryService->find($request);
+            $dataCategory = $this->category->find($request);
 
             return view("backend.categories.edit")->with('dataCategory', $dataCategory);
         } catch (\Exception $exception) {
@@ -57,16 +54,12 @@ class CategoryController extends Controller
         }
     }
 
-    public function update(Request $request)
+    public function update(UpdateCategoryRequest $request)
     {
-        $validated = $request->validate([
-            'name'   => 'required|max:255',
-            'status' => 'required|numeric|min:0|max:2',
-        ]);
         try {
-            $this->categoryService->update($request);
+            $this->category->update($request);
 
-            return redirect()->route('admin.categories.index')->with(['success' => 'Update Product Successful']);
+            return redirect()->route('admin.categories.index')->with(['success' => 'Update Category Successful']);
         } catch (\Exception $exception) {
             return redirect('errors/404');
         }
@@ -75,7 +68,7 @@ class CategoryController extends Controller
     public function view(Request $request)
     {
         try {
-            $dataCategory = $this->categoryService->find($request);
+            $dataCategory = $this->category->find($request);
 
             return view("backend.categories.view")->with('dataCategory', $dataCategory);
         } catch (\Exception $exception) {
@@ -88,7 +81,7 @@ class CategoryController extends Controller
             "errors" => ""
         ];
         try {
-             $this->categoryService->delete($request);
+             $this->category->delete($request);
         } catch (\Exception $exception) {
             $result = [
                 "status" => "NO",
