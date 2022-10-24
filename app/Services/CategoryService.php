@@ -5,7 +5,7 @@ namespace App\Services;
 use Illuminate\Http\Request;
 use App\Models\Category;
 
-class CategoryService
+class CategoryService extends BaseService
 {
     public function __construct(Category $category)
     {
@@ -21,8 +21,9 @@ class CategoryService
 
     public function ajaxLoadListCategory(Request $request)
     {
+        $model             = $this->category;
         $siteQueryBuilder  = $this->makingQueryAllSites($request);
-        $datatable         = $this->queryDatatable($request, $siteQueryBuilder);
+        $datatable         = $this->queryDatatable($request, $siteQueryBuilder, $model);
         $datatable['data'] = $this->parseDataColumnForManageAccount($request, $datatable['data']);
 
         return $datatable;
@@ -54,7 +55,7 @@ class CategoryService
         return $records;
     }
 
-    public function queryDatatable($request, $siteQueryBuilder)
+    public function queryDatatable($request, $siteQueryBuilder, $model)
     {
         $draw        = $request->draw;
         $start       = !empty($request->start) ? $request->start : 0;
@@ -105,16 +106,8 @@ class CategoryService
 
     public function findById($id)
     {
-        try {
-            $data = $this->category
-                ->where("categories.id", "=", $id)->first();
-            if ($data === null) {
-                $data = null;
-            }
-        } catch (\Exception $exception) {
-            $data = null;
-        }
-
+        $data = $this->category->where("id","!=",2)
+            ->find($id);
         return $data;
     }
 

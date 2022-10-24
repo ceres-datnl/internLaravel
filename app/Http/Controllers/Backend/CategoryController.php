@@ -36,6 +36,9 @@ class CategoryController extends Controller
 
     public function store(AddCategoryRequest $request)
     {
+        if($request->ajax()){
+            return response()->json(['status' => 'ok'], 200);
+        }
         try {
             $this->category->insert($request);
         } catch (\Exception $exception) {
@@ -57,6 +60,9 @@ class CategoryController extends Controller
 
     public function update(UpdateCategoryRequest $request, $id)
     {
+        if($request->ajax()){
+            return response()->json(['status' => 'ok'], 200);
+        }
         $dataCategory = $this->category->findById($id);
         if (empty($dataCategory)) {
             return redirect('errors/404');

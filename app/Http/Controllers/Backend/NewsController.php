@@ -39,6 +39,9 @@ class NewsController extends Controller
 
     public function store(AddNewsRequest $request)
     {
+        if($request->ajax()){
+            return response()->json(['status' => 'ok'], 200);
+        }
         try {
             $this->news->insert($request);
 
@@ -73,6 +76,9 @@ class NewsController extends Controller
 
     public function update(UpdateNewsRequest $request, $id)
     {
+        if($request->ajax()){
+            return response()->json(['status' => 'ok'], 200);
+        }
         $findNewsById = $this->news->findById($id);
         if (empty($findNewsById)) {
             return redirect('errors/404');

@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Services;
-
 /**
  * Class BaseRepository.
  *
@@ -365,5 +364,26 @@ abstract class BaseService
         $this->take     = null;
 
         return $this;
+    }
+    public function queryDatatable($request, $siteQueryBuilder, $model)
+    {
+        $draw        = $request->draw;
+        $start       = !empty($request->start) ? $request->start : 0;
+        $length      = !empty($request->length) ? $request->length : 10;
+
+        $totalRecords       = $model->where("status","!=",2)->count();
+        $totalRecordsFilter = $siteQueryBuilder->count();
+        $siteQueryBuilder   = $siteQueryBuilder->skip($start)
+            ->take($length);
+
+        $dataNews   = $siteQueryBuilder->get();
+        $dataReturn = [
+            "draw"            => $draw,
+            "recordsTotal"    => $totalRecords,
+            "recordsFiltered" => $totalRecordsFilter,
+            "data"            => $dataNews
+        ];
+
+        return $dataReturn;
     }
 }

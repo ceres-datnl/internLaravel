@@ -3,13 +3,12 @@
 namespace App\Services;
 
 use App\Helpers\ImageUtils;
-use Yajra\Datatables\Datatables;
 use Illuminate\Http\Request;
 use App\Models\News;
 use App\Services\CategoryService;
 use App\Services\FileService;
 
-class NewsService
+class NewsService extends BaseService
 {
     protected $news;
     protected $category;
@@ -25,8 +24,9 @@ class NewsService
 
     public function ajaxLoadListNews($request)
     {
+        $model = $this->news;
         $siteQueryBuilder  = $this->makingQueryAllSites($request);
-        $datatable         = $this->queryDatatable($request, $siteQueryBuilder);
+        $datatable         = $this->queryDatatable($request, $siteQueryBuilder, $model);
         $datatable['data'] = $this->parseDataColumnForManageAccount($request, $datatable['data']);
 
         return $datatable;
@@ -56,29 +56,6 @@ class NewsService
         return $records;
     }
 
-    public function queryDatatable($request, $siteQueryBuilder)
-    {
-        $draw        = $request->draw;
-        $start       = !empty($request->start) ? $request->start : 0;
-        $length      = !empty($request->length) ? $request->length : 10;
-        $searchArray = $request->search;
-        $searchValue = $searchArray['value'];
-
-        $totalRecords       = $this->news->whereIn("status", [0, 1])->count();
-        $totalRecordsFilter = $siteQueryBuilder->count();
-        $siteQueryBuilder   = $siteQueryBuilder->skip($start)
-            ->take($length);
-
-        $dataNews   = $siteQueryBuilder->get();
-        $dataReturn = [
-            "draw"            => $draw,
-            "recordsTotal"    => $totalRecords,
-            "recordsFiltered" => $totalRecordsFilter,
-            "data"            => $dataNews
-        ];
-
-        return $dataReturn;
-    }
 
     public function parseDataColumnForManageAccount($request, $dataRows)
     {
@@ -119,13 +96,6 @@ class NewsService
         }
         $dataCategory = $dataCategory->skip($offset)->take($numberOfRecords)->paginate();
 
-//        $reponse = [];
-//        foreach ($dataCategory as $item) {
-//            $reponse[] = [
-//                "id"   => $item->id,
-//                "text" => $item->name
-//            ];
-//        }
 
         return $dataCategory;
     }
@@ -178,7 +148,7 @@ class NewsService
 
     public function findById($id)
     {
-        $data = $this->news
+        $data = $this->news->where("id","!=",2)
             ->find($id);
         return $data;
     }

@@ -32,7 +32,7 @@
         <x-slot name="body">
             <table id="data-table-categories" class="table table-striped m-0" data-ordering="false">
                 <thead>
-                <tr class="bg-secondary">
+                <tr class="">
                     <th>ID</th>
                     <th>Name</th>
                     <th>Status</th>

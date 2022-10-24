@@ -32,7 +32,7 @@
         "yajra/laravel-datatables-oracle": "^9.21"
     },
     "require-dev": {
-        "barryvdh/laravel-debugbar": "^3.2",
+        "barryvdh/laravel-debugbar": "^3.7",
         "barryvdh/laravel-ide-helper": "^2.6",
         "brianium/paratest": "^6.2",
         "facade/ignition": "^2.5",

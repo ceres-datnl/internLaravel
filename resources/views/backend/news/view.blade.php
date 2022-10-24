@@ -26,7 +26,7 @@
                     <td>
                         <b>Category</b>
                     </td>
-                    <td>{{$dataNews->categoryName}}</td>
+                    <td>{{$dataNews->category->name}}</td>
                 </tr>
                 <tr>
                     <td>
@@ -38,7 +38,9 @@
                     <td>
                         <b>Content</b>
                     </td>
-                    <td class="text-break">{{$dataNews->content}}</td>
+                    <td class="text-break">
+                        {!!$dataNews->content!!}
+                    </td>
                 </tr>
                 <tr>
                     <td>
