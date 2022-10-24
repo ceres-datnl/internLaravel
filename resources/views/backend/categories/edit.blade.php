@@ -6,7 +6,7 @@
         <button type="button" class="close" data-dismiss="alert">&times;</button>
         <div class="message"></div>
     </div>
-    <x-forms.post :action="route('admin.categories.update')" id="formEditCategory">
+    <x-forms.post :action="route('admin.categories.update', $dataCategory->id)" id="formEditCategory">
         <x-backend.card>
             <x-slot name="header">
                 @lang('Edit Category')
@@ -20,7 +20,8 @@
                 <div class="form-group row">
                     <label for="" class="col-2 col-form-label">Name Category:</label>
                     <div class="col-10">
-                        <input type="text" class="form-control" placeholder="Enter name category" name="name" value="{{$dataCategory->name}}">
+                        <input type="text" class="form-control" placeholder="Enter name category" name="name"
+                               value="{{$dataCategory->name}}">
                     </div>
                 </div>
                 <div class="form-group row">
@@ -56,8 +57,8 @@
                         $("#formEditCategory button[type='submit']").prop('disabled', false);
                         $(".notification").show();
                         for (const [key, value] of Object.entries(result.errors)) {
-                            value.forEach(function (item){
-                                message += item+"<br>";
+                            value.forEach(function (item) {
+                                message += item + "<br>";
                             });
                         }
                         $(".notification .message").html(message);

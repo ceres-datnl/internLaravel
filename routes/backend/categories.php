@@ -22,9 +22,9 @@ Route::group(['prefix' => 'categories', 'as' => 'categories.'], function () {
         ->name('view');
     Route::post('store', [CategoryController::class, 'store'])
         ->name('store');
-    Route::get('edit', [CategoryController::class, 'edit'])
+    Route::get('edit/{id}', [CategoryController::class, 'edit'])
         ->name('edit');
-    Route::put('update',[CategoryController::class, 'update'])->name('update');
+    Route::put('update/{id}', [CategoryController::class, 'update'])->name('update');
 });
 
 

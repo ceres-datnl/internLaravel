@@ -45,34 +45,35 @@ class CategoryController extends Controller
         return redirect()->route('admin.categories.index')->with(['success' => 'Add Category Successful']);
     }
 
-    public function edit(Request $request)
-    {
-        try {
-            $dataCategory = $this->category->find($request);
-
-            return view("backend.categories.edit")->with('dataCategory', $dataCategory);
-        } catch (\Exception $exception) {
-            return redirect('errors/404');
-        }
-    }
-
-    public function update(UpdateCategoryRequest $request)
-    {
-        try {
-            $this->category->update($request);
-
-            return redirect()->route('admin.categories.index')->with(['success' => 'Update Category Successful']);
-        } catch (\Exception $exception) {
-            return redirect('errors/404');
-        }
-    }
-
-    public function view(Request $request)
+    public function edit($id)
     {
         $dataCategory = $this->category->findById($id);
         if (empty($dataCategory)) {
             return redirect('errors/404');
         }
+
+        return view("backend.categories.edit")->with('dataCategory', $dataCategory);
+    }
+
+    public function update(UpdateCategoryRequest $request, $id)
+    {
+        $dataCategory = $this->category->findById($id);
+        if (empty($dataCategory)) {
+            return redirect('errors/404');
+        }
+        $this->category->update($request, $id);
+
+        return redirect()->route('admin.categories.index')->with(['success' => 'Update Category Successful']);
+    }
+
+    public function view($id)
+    {
+        $dataCategory = $this->category->findById($id);
+        if (empty($dataCategory)) {
+            return redirect('errors/404');
+        }
+
+        return view('backend.categories.view')->with("dataCategory", $dataCategory);
     }
 
     public function delete(Request $request)

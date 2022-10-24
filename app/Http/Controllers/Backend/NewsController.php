@@ -79,12 +79,12 @@ class NewsController extends Controller
         }
         $updateNews = $this->news->update($request, $id);
         if ($updateNews)
-        return redirect()->route('admin.news.index')->with(['success' => 'Update News Successful']);
+            return redirect()->route('admin.news.index')->with(['success' => 'Update News Successful']);
     }
 
     public function delete(Request $request)
     {
-        $result = [
+        $result       = [
             "status" => "OK",
             "errors" => ""
         ];

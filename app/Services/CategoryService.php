@@ -50,6 +50,7 @@ class CategoryService
 //            dd($request->created_at." 00:00:01");
             $records = $records->where("created_at", "like", $request->created_at . "%");
         }
+
         return $records;
     }
 
@@ -65,13 +66,14 @@ class CategoryService
         $totalRecordsFilter = $siteQueryBuilder->count();
         $siteQueryBuilder   = $siteQueryBuilder->skip($start)
             ->take($length);
-        $dataCategory = $siteQueryBuilder->get();
-        $dataReturn            = [
+        $dataCategory       = $siteQueryBuilder->get();
+        $dataReturn         = [
             "draw"            => $draw,
             "recordsTotal"    => $totalRecords,
             "recordsFiltered" => $totalRecordsFilter,
             "data"            => $dataCategory
         ];
+
         return $dataReturn;
     }
 
@@ -87,7 +89,7 @@ class CategoryService
             $created_at = date_format($created_at, 'H:i:s d-m-Y');
 
             $actions        .= "<a class='btn btn-info mr-2' href=" . route('admin.categories.view', $id) . " role='button'><i class='fa-solid fa-eye'></i></a>";
-            $actions        .= "<a class='btn btn-primary mr-2' href=" . route('admin.categories.edit', ['id' => $id]) . "' role='button'><i class='fa-solid fa-pen'></i></a>";
+            $actions        .= "<a class='btn btn-primary mr-2' href=" . route('admin.categories.edit', $id) . " role='button'><i class='fa-solid fa-pen'></i></a>";
             $actions        .= "<a class='btn btn-danger text-white buttonDelete' data-id='" . $id . "' role='button'><i class='fa-solid fa-trash'></i></a>";
             $listCategory[] = [
                 'id'         => $id,
@@ -97,21 +99,25 @@ class CategoryService
                 'actions'    => $actions
             ];
         }
+
         return $listCategory;
     }
+
     public function findById($id)
     {
         try {
             $data = $this->category
-                ->where("news.id", "=", $id)->first();
-            if ($data === null){
+                ->where("categories.id", "=", $id)->first();
+            if ($data === null) {
                 $data = null;
             }
         } catch (\Exception $exception) {
             $data = null;
         }
+
         return $data;
     }
+
     public function insert($data)
     {
         $data = [
@@ -141,18 +147,18 @@ class CategoryService
         return $labelStatus;
     }
 
-    public function update($request)
+    public function update($request, $id)
     {
         $data = [
             'name'       => $request->name,
             'status'     => $request->status,
             'updated_at' => Now()
         ];
-        $this->category->where('id', $request->id)->update($data);
+        $this->category->where('id', $id)->update($data);
+
     }
 
-    public
-    function delete($request)
+    public function delete($request)
     {
         $this->category->where('id', $request->id)->update(['status' => 2]);
     }

@@ -176,13 +176,6 @@ class NewsService
         $this->news->insert($data);
     }
 
-    public function getDetailData($obj)
-    {
-        $data = $obj->first();
-
-        return $data;
-    }
-
     public function findById($id)
     {
         try {
@@ -190,17 +183,18 @@ class NewsService
                 ->join("categories", "categories.id", "=", "news.category_id")
                 ->leftJoin("file", "file.id", "=", "news.file_id")
                 ->where("news.id", "=", $id)->first();
-            if ($data === null){
+            if ($data === null) {
                 $data = null;
             }
         } catch (\Exception $exception) {
             $data = null;
         }
         if (!empty($data['file_id'])) {
-            $pathImage = null;
-            $pathImage = $this->getPathImage($data['path'], $data['imageName'], ImageUtils::IMG_SIZE_MEDIUM);
+            $pathImage         = null;
+            $pathImage         = $this->getPathImage($data['path'], $data['imageName'], ImageUtils::IMG_SIZE_MEDIUM);
             $data['linkImage'] = $pathImage;
         }
+
         return $data;
     }
 
@@ -211,7 +205,7 @@ class NewsService
         return $pathImage;
     }
 
-    public function update($request,$id)
+    public function update($request, $id)
     {
         if (isset($request->imageNews) && !is_null($request->imageNews)) {
             $idFile = $this->file->uploadImage($request->imageNews);
@@ -228,7 +222,7 @@ class NewsService
         }
         try {
             $this->news->where("id", $id)->update($data);
-        } catch (\Exception $exception){
+        } catch (\Exception $exception) {
             return false;
         }
 
