@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Requests\Backend\Category;
 
 use Illuminate\Contracts\Validation\Validator;
@@ -31,6 +32,7 @@ class UpdateCategoryRequest extends FormRequest
             'status' => 'required|numeric|min:0|max:2',
         ];
     }
+
     protected function failedValidation(Validator $validator)
     {
         $errors = (new ValidationException($validator))->errors();

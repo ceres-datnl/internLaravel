@@ -90,7 +90,7 @@
                 serverSide: true,
                 responsive: true,
                 ajax: {
-                    url: "{{route('admin.categories.ajax')}}",
+                    url: "{{route('admin.categories.ajaxLoadListCategory')}}",
                     data: function (d) {
                         d.id = $("#data-table-categories input[name='id']").val();
                         d.name = $("#data-table-categories input[name='name']").val();

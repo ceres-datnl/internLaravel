@@ -2,12 +2,15 @@
 @extends('backend.layouts.app')
 
 @section('title', __('News'))
+@section('css')
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+@endsection
 @section('content')
     <div class="alert alert-danger alert-dismissible fade show notification">
         <button type="button" class="close" data-dismiss="alert">&times;</button>
         <div class="message"></div>
     </div>
-    <x-forms.post :action="route('admin.news.update')" enctype="multipart/form-data" id="formEditNews">
+    <x-forms.post :action="route('admin.news.update',$dataNews->id)" enctype="multipart/form-data" id="formEditNews">
         <x-backend.card>
             <x-slot name="header">
                 @lang('Edit News')
@@ -22,11 +25,7 @@
                     <label for="" class="col-2 col-form-label">Category:</label>
                     <div class="col-10">
                         <select class="form-control" name="category_id">
-                            <option value="">--Select Category--</option>
-                            @foreach($dataCategory as $item)
-                                <option
-                                    value="{{$item->id}}" {{$item->id == $dataNews->category_id ? "selected" : ""}}>{{$item->name}}</option>
-                            @endforeach
+                            <option value="{{$dataNews->id}}">{{$dataNews->nameCategory}}</option>
                         </select>
                     </div>
                 </div>
@@ -61,12 +60,12 @@
                     </div>
                 </div>
                 @if($dataNews['linkImage'] !== null)
-                <div class="form-group row">
-                    <label for="" class="col-2 col-form-label">Image Current:</label>
-                    <div class="col-10 mt-3">
-                        <img src="{{$dataNews['linkImage']}}">
+                    <div class="form-group row">
+                        <label for="" class="col-2 col-form-label">Image Current:</label>
+                        <div class="col-10 mt-3">
+                            <img src="{{$dataNews['linkImage']}}">
+                        </div>
                     </div>
-                </div>
                 @endif
                 <button type="submit" class="btn btn-primary">Submit</button>
             </x-slot>
@@ -74,7 +73,38 @@
     </x-forms.post>
 @endsection
 @push('after-scripts')
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
+        $(document).ready(function () {
+            $("select[name='category_id']").select2({
+                ajax: {
+                    url: '{{route("admin.news.loadCategory")}}',
+                    type: "POST",
+                    dataType: 'json',
+                    data: function (params) {
+                        var query = {
+                            "search": params.term,
+                            "_token": "{{ csrf_token() }}",
+                            "page": params.page || 1
+                        }
+
+                        // Query parameters will be ?search=[term]&type=public
+                        return query;
+                    },
+                    processResults: function (response, params) {
+                        params.page = params.page || 1;
+                        return {
+                            results: response,
+                            pagination: {
+                                more: true
+                            }
+                        };
+                    },
+                    cache: true
+                },
+            });
+        });
+
         $(".notification").hide();
 
         $(document).on("submit", "#formEditNews", function (e) {
@@ -90,8 +120,8 @@
                         $("#formEditNews button[type='submit']").prop('disabled', false);
                         $(".notification").show();
                         for (const [key, value] of Object.entries(result.errors)) {
-                            value.forEach(function (item){
-                                message += item+"<br>";
+                            value.forEach(function (item) {
+                                message += item + "<br>";
                             });
                         }
                         $(".notification .message").html(message);

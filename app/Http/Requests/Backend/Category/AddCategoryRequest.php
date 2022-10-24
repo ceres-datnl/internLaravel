@@ -3,11 +3,9 @@
 namespace App\Http\Requests\Backend\Category;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Http\JsonResponse;
 
 
 class AddCategoryRequest extends FormRequest

@@ -19,22 +19,20 @@ class CategoryService
         return $listCategory;
     }
 
-    public function ajax(Request $request)
+    public function ajaxLoadListCategory(Request $request)
+    {
+        $siteQueryBuilder  = $this->makingQueryAllSites($request);
+        $datatable         = $this->queryDatatable($request, $siteQueryBuilder);
+        $datatable['data'] = $this->parseDataColumnForManageAccount($request, $datatable['data']);
+
+        return $datatable;
+    }
+
+    public function makingQueryAllSites($request)
     {
         $records = $this->category;
-        $draw    = $request->draw;
-        $start   = !empty($request->start) ? $request->start : 0;
-        $length  = !empty($request->length) ? $request->length : 10;
-
-        $columnIndexArray = $request->order;
-        $orderArray       = $request->order;
-        $columnNameArray  = $request->get("columns");
-        $searchArray      = $request->search;
-        $searchValue      = $searchArray['value'];
 
 
-//        Total record
-        $totalRecords = $this->category->select("count(*)")->count();
 //        Total record with filter
         $records = $records->select("id", "name", "status", "created_at");
         if (isset($request->id) && !is_null($request->id)) {
@@ -52,13 +50,35 @@ class CategoryService
 //            dd($request->created_at." 00:00:01");
             $records = $records->where("created_at", "like", $request->created_at . "%");
         }
-        $totalRecordsFilter = $records->count();
-        $records            = $records->skip($start)
-            ->take($length);
+        return $records;
+    }
 
-        $dataCategory = $records->get();
+    public function queryDatatable($request, $siteQueryBuilder)
+    {
+        $draw        = $request->draw;
+        $start       = !empty($request->start) ? $request->start : 0;
+        $length      = !empty($request->length) ? $request->length : 10;
+        $searchArray = $request->search;
+        $searchValue = $searchArray['value'];
+
+        $totalRecords       = $this->category->select("count(*)")->count();
+        $totalRecordsFilter = $siteQueryBuilder->count();
+        $siteQueryBuilder   = $siteQueryBuilder->skip($start)
+            ->take($length);
+        $dataCategory = $siteQueryBuilder->get();
+        $dataReturn            = [
+            "draw"            => $draw,
+            "recordsTotal"    => $totalRecords,
+            "recordsFiltered" => $totalRecordsFilter,
+            "data"            => $dataCategory
+        ];
+        return $dataReturn;
+    }
+
+    public function parseDataColumnForManageAccount($request, $dataRows)
+    {
         $listCategory = [];
-        foreach ($dataCategory as $item) {
+        foreach ($dataRows as $item) {
             $actions    = "";
             $id         = $item->id;
             $name       = $item->name;
@@ -66,7 +86,7 @@ class CategoryService
             $created_at = date_create($item->created_at);
             $created_at = date_format($created_at, 'H:i:s d-m-Y');
 
-            $actions        .= "<a class='btn btn-info mr-2' href=" . route('admin.categories.view', ['id' => $id]) . "' role='button'><i class='fa-solid fa-eye'></i></a>";
+            $actions        .= "<a class='btn btn-info mr-2' href=" . route('admin.categories.view', $id) . " role='button'><i class='fa-solid fa-eye'></i></a>";
             $actions        .= "<a class='btn btn-primary mr-2' href=" . route('admin.categories.edit', ['id' => $id]) . "' role='button'><i class='fa-solid fa-pen'></i></a>";
             $actions        .= "<a class='btn btn-danger text-white buttonDelete' data-id='" . $id . "' role='button'><i class='fa-solid fa-trash'></i></a>";
             $listCategory[] = [
@@ -77,18 +97,21 @@ class CategoryService
                 'actions'    => $actions
             ];
         }
-//        dd($listCategory);
-        $response = [
-            "draw"            => $draw,
-            "recordsTotal"    => $totalRecords,
-            "recordsFiltered" => $totalRecordsFilter,
-            "data"            => $listCategory
-        ];
-//        dd($response);
-        echo json_encode($response);
-        exit;
+        return $listCategory;
     }
-
+    public function findById($id)
+    {
+        try {
+            $data = $this->category
+                ->where("news.id", "=", $id)->first();
+            if ($data === null){
+                $data = null;
+            }
+        } catch (\Exception $exception) {
+            $data = null;
+        }
+        return $data;
+    }
     public function insert($data)
     {
         $data = [
@@ -118,13 +141,6 @@ class CategoryService
         return $labelStatus;
     }
 
-    public function find($request)
-    {
-        $dataCategory = $this->category->find($request->id);
-
-        return $dataCategory;
-    }
-
     public function update($request)
     {
         $data = [
@@ -135,7 +151,8 @@ class CategoryService
         $this->category->where('id', $request->id)->update($data);
     }
 
-    public function delete($request)
+    public
+    function delete($request)
     {
         $this->category->where('id', $request->id)->update(['status' => 2]);
     }

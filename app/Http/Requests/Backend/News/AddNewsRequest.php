@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Requests\Backend\News;
 
 use Illuminate\Contracts\Validation\Validator;
@@ -27,13 +28,14 @@ class AddNewsRequest extends FormRequest
     public function rules()
     {
         return [
-            'category_id'   => 'required|numeric',
-            'title' => 'required|max:255',
-            'm_content' => 'required',
-            'status' => 'required|numeric|min:0|max:2',
-            'imageNews' => 'image|mimes:png,jpg,jpeg|max:2048'
+            'category_id' => 'required|numeric',
+            'title'       => 'required|max:255',
+            'm_content'   => 'required',
+            'status'      => 'required|numeric|min:0|max:2',
+            'imageNews'   => 'image|mimes:png,jpg,jpeg|max:2048'
         ];
     }
+
     protected function failedValidation(Validator $validator)
     {
         $errors = (new ValidationException($validator))->errors();

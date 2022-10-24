@@ -23,14 +23,17 @@ class NewsController extends Controller
         return view('backend.news.index');
     }
 
-    public function ajax(Request $request){
-//        dd($request->all());
-        $this->news->ajax($request);
+    public function ajaxLoadListNews(Request $request)
+    {
+        $response = $this->news->ajaxLoadListNews($request);
+        echo json_encode($response);
+        exit;
     }
 
     public function add()
     {
         $dataCategory = $this->news->getCategoryData();
+
         return view('backend.news.add')->with("dataCategory", $dataCategory);
     }
 
@@ -40,49 +43,58 @@ class NewsController extends Controller
             $this->news->insert($request);
 
         } catch (\Exception $exception) {
-            return redirect('errors.404');
+            return redirect('errors/404');
         }
 
         return redirect()->route('admin.news.index')->with(['success' => 'Add News Successful']);
     }
 
-    public function view(Request $request)
+    public function view($id)
     {
-        try {
-            $dataNews = $this->news->find($request);
-        } catch (\Exception $exception) {
+        $dataNews = $this->news->findById($id);
+        if (empty($dataNews)) {
             return redirect('errors/404');
         }
 
         return view('backend.news.view')->with("dataNews", $dataNews);
     }
 
-    public function edit(Request $request)
+    public function edit(Request $request, $id)
     {
-        try {
-            $dataCategory = $this->news->getCategoryData();
-            $dataNews = $this->news->find($request);
+        $dataNews = $this->news->findById($id);
 
-            return view("backend.news.edit")
-                ->with('dataCategory', $dataCategory)
-                ->with('dataNews', $dataNews);
-        } catch (\Exception $exception) {
+        if (empty($dataNews)) {
             return redirect('errors/404');
         }
+
+        return view("backend.news.edit")
+            ->with('dataNews', $dataNews);
     }
-    public function update(UpdateNewsRequest $request){
-        try{
-            $this->news->update($request);
-            return redirect()->route('admin.news.index')->with(['success' => 'Update News Successful']);
-        } catch (\Exception $e){
+
+    public function update(UpdateNewsRequest $request, $id)
+    {
+        $findNewsById = $this->news->findById($id);
+        if (empty($findNewsById)) {
             return redirect('errors/404');
         }
+        $updateNews = $this->news->update($request, $id);
+        if ($updateNews)
+        return redirect()->route('admin.news.index')->with(['success' => 'Update News Successful']);
     }
-    public function delete(Request $request){
+
+    public function delete(Request $request)
+    {
         $result = [
             "status" => "OK",
             "errors" => ""
         ];
+        $findNewsById = $this->news->findById($request->id);
+        if (empty($findNewsById)) {
+            $result = [
+                "status" => "NO",
+                "errors" => "Fail"
+            ];
+        }
         try {
             $this->news->delete($request);
         } catch (\Exception $exception) {
@@ -94,10 +106,12 @@ class NewsController extends Controller
         echo json_encode($result);
         exit;
     }
-    public function loadCategory(Request $request){
+
+    public function loadCategory(Request $request)
+    {
         try {
             $response = $this->news->loadCategory($request);
-        } catch (\Exception $exception){
+        } catch (\Exception $exception) {
             $response = [
                 'errors' => true
             ];

@@ -22,9 +22,11 @@ class CategoryController extends Controller
         return view('backend.categories.index');
     }
 
-    public function ajax(Request $request){
-//        dd($request->all());
-        $this->category->ajax($request);
+    public function ajaxLoadListCategory(Request $request)
+    {
+        $response = $this->category->ajaxLoadListCategory($request);
+        echo json_encode($response);
+        exit;
     }
 
     public function add()
@@ -67,21 +69,20 @@ class CategoryController extends Controller
 
     public function view(Request $request)
     {
-        try {
-            $dataCategory = $this->category->find($request);
-
-            return view("backend.categories.view")->with('dataCategory', $dataCategory);
-        } catch (\Exception $exception) {
+        $dataCategory = $this->category->findById($id);
+        if (empty($dataCategory)) {
             return redirect('errors/404');
         }
     }
-    public function delete(Request $request){
+
+    public function delete(Request $request)
+    {
         $result = [
             "status" => "OK",
             "errors" => ""
         ];
         try {
-             $this->category->delete($request);
+            $this->category->delete($request);
         } catch (\Exception $exception) {
             $result = [
                 "status" => "NO",

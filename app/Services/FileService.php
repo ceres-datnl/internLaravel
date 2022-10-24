@@ -18,15 +18,15 @@ class FileService
 
     public function uploadImage($image)
     {
-        $pathSaveImage = public_path('uploads/images/'.date("Y/m"));
+        $pathSaveImage = public_path('uploads/images/' . date("Y/m"));
 
         $file         = new File();
         $originalName = $image->getClientOriginalName();
         $imageName    = time() . "-" . md5($originalName . time()) . "-" . $originalName;
-        $image->move($pathSaveImage,$imageName);
+        $image->move($pathSaveImage, $imageName);
         ImageUtils::saveOriginalImage($pathSaveImage, $imageName);
 
-        $path = 'uploads/images/'.date("Y/m");
+        $path = 'uploads/images/' . date("Y/m");
         $data = [
             "original_name" => $originalName,
             "name"          => $imageName,
@@ -39,6 +39,7 @@ class FileService
         } catch (Exception $exception) {
             return $exception;
         }
+
         return $idFile;
     }
 

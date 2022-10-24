@@ -1,6 +1,9 @@
 @extends('backend.layouts.app')
 
-@section('title', __('Category'))
+@section('title', __('News'))
+@section('css')
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+@endsection
 @section('content')
     <div class="alert alert-danger alert-dismissible fade show notification">
         <button type="button" class="close" data-dismiss="alert">&times;</button>
@@ -20,9 +23,6 @@
                     <div class="col-10">
                         <select class="form-control" name="category_id">
                             <option value="">--Select Category--</option>
-                            @foreach($dataCategory as $item)
-                            <option value="{{$item->id}}">{{$item->name}}</option>
-                            @endforeach
                         </select>
                     </div>
                 </div>
@@ -54,14 +54,45 @@
                         <input type="file" class="form-control" name="imageNews">
                     </div>
                 </div>
-
                 <button type="submit" class="btn btn-primary">Submit</button>
             </x-slot>
         </x-backend.card>
     </x-forms.post>
 @endsection
 @push('after-scripts')
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
+        $(document).ready(function (){
+            $("select[name='category_id']").select2({
+                ajax: {
+                    url: '{{route("admin.news.loadCategory")}}',
+                    type: "POST",
+                    dataType: 'json',
+                    data: function (params) {
+                        var query = {
+                            "search": params.term,
+                            "_token": "{{ csrf_token() }}",
+                            "page": params.page || 1
+                        }
+
+                        // Query parameters will be ?search=[term]&type=public
+                        return query;
+                    },
+                    processResults: function (response, params) {
+                        params.page = params.page || 1;
+                        return {
+                            results: response,
+                            pagination: {
+                                more: true
+                            }
+                        };
+                    },
+                    cache: true
+                },
+            });
+        });
+        $("select[name='category_id']").val('2');
+        $("select[name='category_id']").trigger('change');
         $(".notification").hide();
         $(document).on("submit", "#formAddNews", function (e) {
             e.preventDefault();

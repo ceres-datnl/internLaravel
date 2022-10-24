@@ -22,29 +22,19 @@ class NewsService
         $this->file     = $file;
     }
 
-//    public function getNewsData()
-//    {
-//        $dataNews = $this->news->select("news.*", "categories.name as nameCategory")
-//            ->join("categories", "categories.id", "=", "news.category_id")
-//            ->whereIn("news.status", [0, 1])
-//            ->paginate(10);
-//
-//        return $dataNews;
-//    }
 
-    public function ajax($request)
+    public function ajaxLoadListNews($request)
     {
-        $draw   = $request->draw;
-        $start  = !empty($request->start) ? $request->start : 0;
-        $length = !empty($request->length) ? $request->length : 10;
+        $siteQueryBuilder  = $this->makingQueryAllSites($request);
+        $datatable         = $this->queryDatatable($request, $siteQueryBuilder);
+        $datatable['data'] = $this->parseDataColumnForManageAccount($request, $datatable['data']);
 
-        $searchArray = $request->search;
-        $searchValue = $searchArray['value'];
+        return $datatable;
+    }
 
-        $totalRecords = $this->news->whereIn("status", [0, 1])->count();
-
-//        Total record with filter
-        $records = $this->news->select("news.*","categories.name as nameCategory")->join("categories", "categories.id", "=", "news.category_id");
+    public function makingQueryAllSites($request)
+    {
+        $records = $this->news->select("news.*", "categories.name as nameCategory")->join("categories", "categories.id", "=", "news.category_id");
         if (isset($request->id) && !is_null($request->id)) {
             $records = $records->where("news.id", (int)$request->id);
         }
@@ -52,54 +42,70 @@ class NewsService
             $records = $records->where("news.category_id", $request->category_id);
         }
         if (isset($request->title) && !is_null($request->title)) {
-            $records = $records->where("news.title", $request->title);
+            $records = $records->where("news.title", "like", "%" . $request->title . "%");
         }
         if (isset($request->status) && !is_null($request->status)) {
             $records = $records->where("news.status", $request->status);
         } else {
-            $records = $records->whereIn("news.status", [0, 1]);
+            $records = $records->where("news.status", "!=", 2);
         }
         if (isset($request->created_at) && !is_null($request->created_at)) {
-//            dd($request->created_at." 00:00:01");
             $records = $records->where("news.created_at", "like", $request->created_at . "%");
         }
-        $totalRecordsFilter = $records->count();
-        $records            = $records->skip($start)
+
+        return $records;
+    }
+
+    public function queryDatatable($request, $siteQueryBuilder)
+    {
+        $draw        = $request->draw;
+        $start       = !empty($request->start) ? $request->start : 0;
+        $length      = !empty($request->length) ? $request->length : 10;
+        $searchArray = $request->search;
+        $searchValue = $searchArray['value'];
+
+        $totalRecords       = $this->news->whereIn("status", [0, 1])->count();
+        $totalRecordsFilter = $siteQueryBuilder->count();
+        $siteQueryBuilder   = $siteQueryBuilder->skip($start)
             ->take($length);
 
-        $dataNews = $records->get();
-        $listNews = [];
-
-        foreach ($dataNews as $item) {
-            $actions     = "";
-            $id          = $item->id;
-            $nameCategory = $item->nameCategory;
-            $title       = $item->title;
-            $status      = self::getStatusLabel($item->status);
-            $created_at  = date_create($item->created_at);
-            $created_at  = date_format($created_at, 'H:i:s d-m-Y');
-
-            $actions        .= "<a class='btn btn-info mr-2' href=" . route('admin.news.view', ['id' => $id]) . "' role='button'><i class='fa-solid fa-eye'></i></a>";
-            $actions        .= "<a class='btn btn-primary mr-2' href=" . route('admin.news.edit', ['id' => $id]) . "' role='button'><i class='fa-solid fa-pen'></i></a>";
-            $actions        .= "<a class='btn btn-danger text-white buttonDelete' data-id='" . $id . "' role='button'><i class='fa-solid fa-trash'></i></a>";
-            $listCategory[] = [
-                'id'          => $id,
-                'nameCategory' => $nameCategory,
-                'title'       => $title,
-                'status'      => $status,
-                'created_at'  => $created_at,
-                'actions'     => $actions
-            ];
-        }
-        $response = [
+        $dataNews   = $siteQueryBuilder->get();
+        $dataReturn = [
             "draw"            => $draw,
             "recordsTotal"    => $totalRecords,
             "recordsFiltered" => $totalRecordsFilter,
-            "data"            => $listCategory
+            "data"            => $dataNews
         ];
-//        dd($response);
-        echo json_encode($response);
-        exit;
+
+        return $dataReturn;
+    }
+
+    public function parseDataColumnForManageAccount($request, $dataRows)
+    {
+        $listCategory = [];
+        foreach ($dataRows as $item) {
+            $actions      = "";
+            $id           = $item->id;
+            $nameCategory = $item->nameCategory;
+            $title        = $item->title;
+            $status       = self::getStatusLabel($item->status);
+            $created_at   = date_create($item->created_at);
+            $created_at   = date_format($created_at, 'H:i:s d-m-Y');
+
+            $actions        .= "<a class='btn btn-info mr-2' href=" . route('admin.news.view', $id) . " role='button'><i class='fa-solid fa-eye'></i></a>";
+            $actions        .= "<a class='btn btn-primary mr-2' href=" . route('admin.news.edit', $id) . " role='button'><i class='fa-solid fa-pen'></i></a>";
+            $actions        .= "<a class='btn btn-danger text-white buttonDelete' data-id='" . $id . "' role='button'><i class='fa-solid fa-trash'></i></a>";
+            $listCategory[] = [
+                'id'           => $id,
+                'nameCategory' => $nameCategory,
+                'title'        => $title,
+                'status'       => $status,
+                'created_at'   => $created_at,
+                'actions'      => $actions
+            ];
+        }
+
+        return $listCategory;
     }
 
     public function loadCategory($request)
@@ -170,35 +176,43 @@ class NewsService
         $this->news->insert($data);
     }
 
-    public function find($request)
+    public function getDetailData($obj)
     {
-        try {
-            $data = $this->news->select("news.*", "file.path as path", "file.name as imageName", "categories.name as categoryName")
-                ->join("categories", "categories.id", "=", "news.category_id")
-                ->leftJoin("file", "file.id", "=", "news.file_id")
-                ->where("news.id", "=", $request->id)
-                ->first();
-        } catch (\Exception $exception) {
-            return redirect('errors/404');
-        }
-
-        if ($data !== null) {
-            if ($data['file_id'] !== null) {
-                $pathImage = ImageUtils::getUrlImage($data['path'], $data['imageName'], ImageUtils::IMG_SIZE_MEDIUM);
-            } else {
-                $pathImage = null;
-            }
-        } else {
-            return redirect('errors/404');
-        }
-        $data['linkImage'] = $pathImage;
+        $data = $obj->first();
 
         return $data;
     }
 
-    public function update($request)
+    public function findById($id)
     {
-        var_dump($request->all());
+        try {
+            $data = $this->news->select("news.*", "file.path as path", "file.name as imageName", "categories.name as nameCategory")
+                ->join("categories", "categories.id", "=", "news.category_id")
+                ->leftJoin("file", "file.id", "=", "news.file_id")
+                ->where("news.id", "=", $id)->first();
+            if ($data === null){
+                $data = null;
+            }
+        } catch (\Exception $exception) {
+            $data = null;
+        }
+        if (!empty($data['file_id'])) {
+            $pathImage = null;
+            $pathImage = $this->getPathImage($data['path'], $data['imageName'], ImageUtils::IMG_SIZE_MEDIUM);
+            $data['linkImage'] = $pathImage;
+        }
+        return $data;
+    }
+
+    public function getPathImage($path, $imageName, $size)
+    {
+        $pathImage = ImageUtils::getUrlImage($path, $imageName, $size);
+
+        return $pathImage;
+    }
+
+    public function update($request,$id)
+    {
         if (isset($request->imageNews) && !is_null($request->imageNews)) {
             $idFile = $this->file->uploadImage($request->imageNews);
         }
@@ -212,7 +226,13 @@ class NewsService
         if (isset($idFile)) {
             $data['file_id'] = $idFile;
         }
-        $this->news->where("id", $request->id)->update($data);
+        try {
+            $this->news->where("id", $id)->update($data);
+        } catch (\Exception $exception){
+            return false;
+        }
+
+        return true;
     }
 
     public function delete($request)

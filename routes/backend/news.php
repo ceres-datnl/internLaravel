@@ -16,24 +16,18 @@ Route::group(['prefix' => 'news', 'as' => 'news.'],function(){
         });
     Route::post('store', [NewsController::class, 'store'])
         ->name('store');
-    Route::get('view', [NewsController::class, 'view'])
-        ->name('view')->breadcrumbs(function (Trail $trail) {
-            $trail->push(__('View'), route('admin.news.view'));
-        });
-    Route::get('edit', [NewsController::class, 'edit'])
-        ->name('edit')->breadcrumbs(function (Trail $trail) {
-            $trail->push(__('Edit'), route('admin.news.edit'));
-        });
-    Route::put('update', [NewsController::class, 'update'])
+    Route::get('view/{id}', [NewsController::class, 'view'])
+        ->name('view');
+    Route::get('edit/{id}', [NewsController::class, 'edit'])
+        ->name('edit');
+    Route::put('update/{id}', [NewsController::class, 'update'])
         ->name('update')->breadcrumbs(function (Trail $trail) {
             $trail->push(__('Update'), route('admin.news.update'));
         });
     Route::get('delete', [NewsController::class, 'delete'])
-        ->name('delete')->breadcrumbs(function (Trail $trail) {
-            $trail->push(__('Delete'), route('admin.news.delete'));
-        });
-    Route::get('ajax', [NewsController::class, 'ajax'])
-        ->name('ajax');
+        ->name('delete');
+    Route::get('ajaxLoadListNews', [NewsController::class, 'ajaxLoadListNews'])
+        ->name('ajaxLoadListNews');
     Route::post('loadCategory', [NewsController::class, 'loadCategory'])
         ->name('loadCategory');
 });

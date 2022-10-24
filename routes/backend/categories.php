@@ -16,18 +16,14 @@ Route::group(['prefix' => 'categories', 'as' => 'categories.'], function () {
         });
     Route::get('delete', [CategoryController::class, 'delete'])
         ->name('delete');
-    Route::get('ajax', [CategoryController::class, 'ajax'])
-        ->name('ajax');
-    Route::get('view', [CategoryController::class, 'view'])
-        ->name('view')->breadcrumbs(function (Trail $trail) {
-            $trail->push(__('View'), route('admin.categories.view'));
-        });
+    Route::get('ajaxLoadListCategory', [CategoryController::class, 'ajaxLoadListCategory'])
+        ->name('ajaxLoadListCategory');
+    Route::get('view/{id}', [CategoryController::class, 'view'])
+        ->name('view');
     Route::post('store', [CategoryController::class, 'store'])
         ->name('store');
     Route::get('edit', [CategoryController::class, 'edit'])
-        ->name('edit')->breadcrumbs(function (Trail $trail) {
-            $trail->push(__('Edit'), route('admin.categories.edit'));
-        });
+        ->name('edit');
     Route::put('update',[CategoryController::class, 'update'])->name('update');
 });
 

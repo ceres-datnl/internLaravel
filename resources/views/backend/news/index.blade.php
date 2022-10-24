@@ -125,7 +125,7 @@
                 serverSide: true,
                 responsive: true,
                 ajax: {
-                    url: "{{route('admin.news.ajax')}}",
+                    url: "{{route('admin.news.ajaxLoadListNews')}}",
                     data: function (d) {
                         d.id = $("#data-table-news input[name='id']").val();
                         d.category_id = $("#data-table-news select[name='category_id']").val();
