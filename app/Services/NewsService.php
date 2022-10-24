@@ -113,21 +113,21 @@ class NewsService
         $numberOfRecords = 25;
 
         $offset       = ($request->page - 1) * $numberOfRecords;
-        $dataCategory = $this->category->category->select("id", "name");
+        $dataCategory = $this->category->category->select("id", "name as text");
         if (isset($request->search)) {
             $dataCategory = $dataCategory->where("name", "like", "%" . $request->search . "%");
         }
-        $dataCategory = $dataCategory->skip($offset)->take($numberOfRecords)->get();
+        $dataCategory = $dataCategory->skip($offset)->take($numberOfRecords)->paginate();
 
-        $reponse = [];
-        foreach ($dataCategory as $item) {
-            $reponse[] = [
-                "id"   => $item->id,
-                "text" => $item->name
-            ];
-        }
+//        $reponse = [];
+//        foreach ($dataCategory as $item) {
+//            $reponse[] = [
+//                "id"   => $item->id,
+//                "text" => $item->name
+//            ];
+//        }
 
-        return $reponse;
+        return $dataCategory;
     }
 
     public function getCategoryData()
@@ -178,23 +178,8 @@ class NewsService
 
     public function findById($id)
     {
-        try {
-            $data = $this->news->select("news.*", "file.path as path", "file.name as imageName", "categories.name as nameCategory")
-                ->join("categories", "categories.id", "=", "news.category_id")
-                ->leftJoin("file", "file.id", "=", "news.file_id")
-                ->where("news.id", "=", $id)->first();
-            if ($data === null) {
-                $data = null;
-            }
-        } catch (\Exception $exception) {
-            $data = null;
-        }
-        if (!empty($data['file_id'])) {
-            $pathImage         = null;
-            $pathImage         = $this->getPathImage($data['path'], $data['imageName'], ImageUtils::IMG_SIZE_MEDIUM);
-            $data['linkImage'] = $pathImage;
-        }
-
+        $data = $this->news
+            ->find($id);
         return $data;
     }
 

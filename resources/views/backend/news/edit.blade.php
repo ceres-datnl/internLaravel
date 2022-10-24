@@ -25,7 +25,7 @@
                     <label for="" class="col-2 col-form-label">Category:</label>
                     <div class="col-10">
                         <select class="form-control" name="category_id">
-                            <option value="{{$dataNews->id}}">{{$dataNews->nameCategory}}</option>
+                            <option value="{{$dataNews->id}}">{{$dataNews->category->name}}</option>
                         </select>
                     </div>
                 </div>
@@ -59,11 +59,11 @@
                         <input type="file" class="form-control" name="imageNews">
                     </div>
                 </div>
-                @if($dataNews['linkImage'] !== null)
+                @if(isset($dataNews->file))
                     <div class="form-group row">
                         <label for="" class="col-2 col-form-label">Image Current:</label>
                         <div class="col-10 mt-3">
-                            <img src="{{$dataNews['linkImage']}}">
+                            <img src="{{\App\Helpers\ImageUtils::getUrlImage($dataNews->file->path,$dataNews->file->name,\App\Helpers\ImageUtils::IMG_SIZE_MEDIUM)}}">
                         </div>
                     </div>
                 @endif
@@ -74,8 +74,10 @@
 @endsection
 @push('after-scripts')
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.ckeditor.com/4.20.0/standard/ckeditor.js"></script>
     <script>
-        $(document).ready(function () {
+        $(document).ready(function (){
+            CKEDITOR.replace( 'content' );
             $("select[name='category_id']").select2({
                 ajax: {
                     url: '{{route("admin.news.loadCategory")}}',
@@ -83,9 +85,10 @@
                     dataType: 'json',
                     data: function (params) {
                         var query = {
-                            "search": params.term,
                             "_token": "{{ csrf_token() }}",
-                            "page": params.page || 1
+                            sscSearchTerm: params.term,
+                            page: params.page,
+                            pageLimit: 25
                         }
 
                         // Query parameters will be ?search=[term]&type=public
@@ -94,9 +97,9 @@
                     processResults: function (response, params) {
                         params.page = params.page || 1;
                         return {
-                            results: response,
+                            results: response.data,
                             pagination: {
-                                more: true
+                                more: params.page * 25 < response.total
                             }
                         };
                     },
@@ -104,7 +107,6 @@
                 },
             });
         });
-
         $(".notification").hide();
 
         $(document).on("submit", "#formEditNews", function (e) {

@@ -12,4 +12,8 @@ class Category extends Model
     protected $table = 'categories';
     protected $primaryKey = 'id';
     protected $fillable = ['name', 'status', 'created_at', 'updated_at'];
+    public function news()
+    {
+        return $this->hasMany(News::class);
+    }
 }

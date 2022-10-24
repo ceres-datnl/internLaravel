@@ -61,8 +61,10 @@
 @endsection
 @push('after-scripts')
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.ckeditor.com/4.20.0/standard/ckeditor.js"></script>
     <script>
         $(document).ready(function (){
+            CKEDITOR.replace( 'm_content' );
             $("select[name='category_id']").select2({
                 ajax: {
                     url: '{{route("admin.news.loadCategory")}}',
@@ -70,9 +72,10 @@
                     dataType: 'json',
                     data: function (params) {
                         var query = {
-                            "search": params.term,
                             "_token": "{{ csrf_token() }}",
-                            "page": params.page || 1
+                            sscSearchTerm: params.term,
+                            page: params.page,
+                            pageLimit: 25
                         }
 
                         // Query parameters will be ?search=[term]&type=public
@@ -81,9 +84,9 @@
                     processResults: function (response, params) {
                         params.page = params.page || 1;
                         return {
-                            results: response,
+                            results: response.data,
                             pagination: {
-                                more: true
+                                more: params.page * 25 < response.total
                             }
                         };
                     },
@@ -91,8 +94,6 @@
                 },
             });
         });
-        $("select[name='category_id']").val('2');
-        $("select[name='category_id']").trigger('change');
         $(".notification").hide();
         $(document).on("submit", "#formAddNews", function (e) {
             e.preventDefault();

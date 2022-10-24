@@ -64,15 +64,16 @@
                     </td>
                     <td>{{date_format($dataNews->updated_at,'H:i:s d-m-Y')}}</td>
                 </tr>
-                <tr>
-                    <td>
-                        <b>Image</b>
-                    </td>
-                    <td><img src="{{$dataNews->linkImage}}" width="550px" height="auto" class="rounded"
-                             onerror="this.src='{{url("uploads/images/default/default-thumbnail.jpg")}}';"
-                             alt="Cinque Terre">
-                    </td>
-                </tr>
+                @if($dataNews->file)
+                    <tr>
+                        <td>
+                            <b>Image</b>
+                        </td>
+                        <td><img src="{{\App\Helpers\ImageUtils::getUrlImage($dataNews->file->path,$dataNews->file->name,\App\Helpers\ImageUtils::IMG_SIZE_MEDIUM)}}" width="550px" height="auto" class="rounded"
+                                 alt="Cinque Terre">
+                        </td>
+                    </tr>
+                @endif
                 </tbody>
             </table>
         </x-slot>

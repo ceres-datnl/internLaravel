@@ -75,9 +75,10 @@
                     dataType: 'json',
                     data: function (params) {
                         var query = {
-                            "search": params.term,
                             "_token": "{{ csrf_token() }}",
-                            "page": params.page || 1
+                            sscSearchTerm: params.term,
+                            page: params.page,
+                            pageLimit: 25
                         }
 
                         // Query parameters will be ?search=[term]&type=public
@@ -86,9 +87,9 @@
                     processResults: function (response, params) {
                         params.page = params.page || 1;
                         return {
-                            results: response,
+                            results: response.data,
                             pagination: {
-                                more: true
+                                more: params.page * 25 < response.total
                             }
                         };
                     },
