@@ -66,7 +66,7 @@
                     </td>
                     <td>{{date_format($dataNews->updated_at,'H:i:s d-m-Y')}}</td>
                 </tr>
-                @if($dataNews->file)
+                @if(isset($dataNews->file))
                     <tr>
                         <td>
                             <b>Image</b>

@@ -18,6 +18,11 @@ class FileService
 
     public function uploadImage($image)
     {
+        $response = [
+            "status" => "OK",
+            "error"  => "",
+            "data"   => []
+        ];
         $pathSaveImage = public_path('uploads/images/' . date("Y/m"));
 
         $file         = new File();
@@ -37,10 +42,18 @@ class FileService
         try {
             $idFile = $file->insertGetId($data);
         } catch (Exception $exception) {
-            return $exception;
+            $response = [
+                "status" => "NO",
+                "error"  => "An error has occurred",
+                "data"   => []
+            ];
+            return $response;
         }
 
-        return $idFile;
+        return [
+            "idFile" => $idFile,
+            "path"   => $path
+        ];
     }
 
 }

@@ -127,8 +127,8 @@ class NewsService extends BaseService
     public function insert(Request $request)
     {
 
-        if (isset($request->imageNews) && !is_null($request->imageNews)) {
-            $idFile = $this->file->uploadImage($request->imageNews);
+        if (isset($request->idFile) && !is_null($request->idFile)) {
+            $idFile = $request->idFile;
         } else {
             $idFile = null;
         }
@@ -162,8 +162,8 @@ class NewsService extends BaseService
 
     public function update($request, $id)
     {
-        if (isset($request->imageNews) && !is_null($request->imageNews)) {
-            $idFile = $this->file->uploadImage($request->imageNews);
+        if (isset($request->idFile) && !is_null($request->idFile)) {
+            $idFile = $request->idFile;
         }
         $data = [
             "category_id" => $request->category_id,

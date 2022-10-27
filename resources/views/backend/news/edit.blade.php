@@ -4,6 +4,7 @@
 @section('title', __('News'))
 @section('css')
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css"/>
 @endsection
 @section('content')
     <div class="alert alert-danger alert-dismissible fade show notification">
@@ -11,6 +12,9 @@
         <div class="message"></div>
     </div>
     <x-forms.post :action="route('admin.news.update',$dataNews->id)" enctype="multipart/form-data" id="formEditNews">
+        @csrf
+        @method("put")
+        <input type="hidden" name="idFile">
         <x-backend.card>
             <x-slot name="header">
                 @lang('Edit News')
@@ -19,8 +23,6 @@
                 <x-utils.link class="card-header-action" :href="route('admin.news.index')" :text="__('Back')"/>
             </x-slot>
             <x-slot name="body">
-                @method('put')
-                <input type="hidden" value="{{$dataNews->id}}" name="id">
                 <div class="form-group row">
                     <label for="" class="col-2 col-form-label">Category:</label>
                     <div class="col-10">
@@ -53,12 +55,6 @@
                         </select>
                     </div>
                 </div>
-                <div class="form-group row">
-                    <label for="" class="col-2 col-form-label">Image:</label>
-                    <div class="col-10">
-                        <input type="file" class="form-control" name="imageNews">
-                    </div>
-                </div>
                 @if(isset($dataNews->file))
                     <div class="form-group row">
                         <label for="" class="col-2 col-form-label">Image Current:</label>
@@ -67,6 +63,18 @@
                         </div>
                     </div>
                 @endif
+                <div class="form-group row dropzone" id="mydropzone">
+                    <label for="" class="col-2 col-form-label">Image:</label>
+                    <div class="col-10 border border-primary mr-0 ml-0">
+                        <div class="dz-default dz-message ">
+                            <button class="dz-button" type="button">Drop files here to upload</button>
+                        </div>
+                        {{--                        <div class="dropzone" id="myDropzone"></div>--}}
+                        <div class="dropzone-previews">
+
+                        </div>
+                    </div>
+                </div>
                 <button type="submit" class="btn btn-primary">Submit</button>
             </x-slot>
         </x-backend.card>
@@ -75,7 +83,9 @@
 @push('after-scripts')
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdn.ckeditor.com/4.20.0/standard/ckeditor.js"></script>
+    <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
     <script>
+        Dropzone.autoDiscover = false;
         $(document).ready(function (){
             CKEDITOR.replace( 'content' );
             $("select[name='category_id']").select2({
@@ -105,6 +115,35 @@
                     },
                     cache: true
                 },
+            });
+            $('#mydropzone').dropzone({
+                paramName: "inputFiles",
+                method: "POST",
+                previewsContainer: ".dropzone-previews",
+                url: "{{route('admin.files.uploadImageNews')}}",
+                maxFiles: 1,
+                addRemoveLinks: true,
+                headers: {
+                    'X-CSRF-TOKEN': "{{ csrf_token() }}"
+                },
+                {{--sending: function(file, xhr, formData) {--}}
+                {{--    formData.append("_token", {{csrf_token()}});--}}
+                {{--},--}}
+                init: function () {
+                    this.on("maxfilesexceeded", function (file) {
+                        this.removeAllFiles();
+                        this.addFile(file);
+                    });
+                    this.on("error", function(file, response) {
+                        $(".dz-error-message").html("");
+                        $(".dz-error-message").removeClass("dz-error-message");
+                    });
+                    this.on("success", function(file, response){
+                        response = JSON.parse(response);
+                        $("input[name=idFile]").val(response.idFile);
+                    });
+                },
+
             });
         });
         $(".notification").hide();
